@@ -1,11 +1,19 @@
 package com.example.macintosh.simpleexoplayerexampleapilevel;
 
+import android.app.Dialog;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
@@ -14,6 +22,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.PlaybackControlView;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -23,6 +32,10 @@ import com.google.android.exoplayer2.util.Util;
 
 public class MainActivity extends AppCompatActivity {
 
+    Dialog mFullScreenDialog;
+    boolean mExoPlayerFullscreen = false;
+    ImageView mFullScreenIcon;
+    private FrameLayout mFullScreenButton;
 
     SimpleExoPlayer player;
     PlayerView mPlayerView;
@@ -58,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        initFullscreenDialog();
+        initFullscreenButton();
         initialisePlayer();
         Log.e("ON_RESUME","On resume");
     }
@@ -124,5 +139,49 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         Log.e("ON_PAUSE","ONPAUSE");
         releasePlayer();
+    }
+
+    private void initFullscreenDialog(){
+        mFullScreenDialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
+            public void onBackPressed() {
+                if (mExoPlayerFullscreen)
+                    closeFullscreenDialog();
+                super.onBackPressed();
+            }
+        };
+    }
+
+
+    private void closeFullscreenDialog() {
+        ((ViewGroup) mPlayerView.getParent()).removeView(mPlayerView);
+        ((FrameLayout) findViewById(R.id.main_media_frame)).addView(mPlayerView);
+        mExoPlayerFullscreen = false;
+        mFullScreenDialog.dismiss();
+        mFullScreenIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_fullscreen_expand));
+    }
+
+    private void openFullscreenDialog() {
+
+        ((ViewGroup) mPlayerView.getParent()).removeView(mPlayerView);
+        mFullScreenDialog.addContentView(mPlayerView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mFullScreenIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_fullscreen_skrink));
+        mExoPlayerFullscreen = true;
+        mFullScreenDialog.show();
+    }
+
+    private void initFullscreenButton() {
+
+        PlaybackControlView controlView = mPlayerView.findViewById(R.id.exo_controller);
+        mFullScreenIcon = controlView.findViewById(R.id.exo_fullscreen_icon);
+        mFullScreenButton = controlView.findViewById(R.id.exo_fullscreen_button);
+        mFullScreenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mExoPlayerFullscreen)
+                    openFullscreenDialog();
+                else
+                    closeFullscreenDialog();
+            }
+        });
     }
 }
