@@ -1,6 +1,7 @@
 package com.example.macintosh.simpleexoplayerexampleapilevel;
 
 import android.app.Dialog;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -99,6 +102,13 @@ public class MainActivity extends AppCompatActivity {
         mPlayerView.setPlayer(player);
         player.seekTo(currentWindow,playBackPosition);
         player.setPlayWhenReady(autoPlay);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            requestWindowFeature(Window.FEATURE_NO_TITLE);
+//            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            openFullscreenDialog();
+        }
 
     }
 
