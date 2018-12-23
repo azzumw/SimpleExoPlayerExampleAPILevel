@@ -62,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
         Log.e("ON_RESUME","On resume");
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        autoPlay = false;
+    }
+
     private void initialisePlayer(){
         Uri uri = Uri.parse(PATH);
 
