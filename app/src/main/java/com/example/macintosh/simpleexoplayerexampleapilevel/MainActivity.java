@@ -60,21 +60,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mPlayerView = findViewById(R.id.playerview);
-
+        initFullscreenDialog();
         if(savedInstanceState!= null){
             Log.e("ON_CREATE","saveinstance");
             currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_INDEX);
             playBackPosition = savedInstanceState.getLong(PLAYBACK_POSITION);
             autoPlay = savedInstanceState.getBoolean(AUTOPLAY);
-
         }
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mExoPlayerFullscreen = savedInstanceState.getBoolean("fullscreen");
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        initFullscreenDialog();
+        if(mExoPlayerFullscreen){
+            initFullscreenDialog();
+        }
         initFullscreenButton();
         initialisePlayer();
         Log.e("ON_RESUME","On resume");
@@ -84,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         autoPlay = false;
+        mExoPlayerFullscreen = getIntent().getBooleanExtra("intent",mExoPlayerFullscreen);
     }
 
     private void initialisePlayer(){
@@ -107,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 //            requestWindowFeature(Window.FEATURE_NO_TITLE);
 //            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 //                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            openFullscreenDialog();
+//            openFullscreenDialog();
         }
 
     }
@@ -133,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
             outState.putInt(CURRENT_WINDOW_INDEX,currentWindow);
             outState.putLong(PLAYBACK_POSITION,playBackPosition);
             outState.putBoolean(AUTOPLAY,autoPlay);
+            getIntent().putExtra("intent",mExoPlayerFullscreen);
         }
     }
 
@@ -152,21 +160,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initFullscreenDialog(){
-        mFullScreenDialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
-            public void onBackPressed() {
-                if (mExoPlayerFullscreen)
-                    closeFullscreenDialog();
-                super.onBackPressed();
-            }
-        };
+
+            mFullScreenDialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
+                public void onBackPressed() {
+                    if (mExoPlayerFullscreen)
+                        closeFullscreenDialog();
+                    super.onBackPressed();
+                }
+            };
+
+
     }
 
 
     private void closeFullscreenDialog() {
         ((ViewGroup) mPlayerView.getParent()).removeView(mPlayerView);
         ((FrameLayout) findViewById(R.id.main_media_frame)).addView(mPlayerView);
-        mExoPlayerFullscreen = false;
         mFullScreenDialog.dismiss();
+        mExoPlayerFullscreen = false;
         mFullScreenIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_fullscreen_expand));
     }
 
@@ -187,10 +198,10 @@ public class MainActivity extends AppCompatActivity {
         mFullScreenButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mExoPlayerFullscreen)
-                    openFullscreenDialog();
-                else
+                if (mExoPlayerFullscreen)
                     closeFullscreenDialog();
+                else
+                    openFullscreenDialog();
             }
         });
     }
